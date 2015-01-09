@@ -22,6 +22,7 @@ describe ESReindex do
 
       it "doesn't use #exit" do
         reindexer.stub :copy_mappings
+        reindexer.stub :copy_docs
         expect(reindexer).not_to receive :exit
       end
     end
@@ -36,6 +37,7 @@ describe ESReindex do
 
       it "exits 0 on success" do
         expect(reindexer).to receive(:copy_mappings).and_return true
+        expect(reindexer).to receive(:copy_docs).and_return true
         expect(reindexer).to receive(:exit).with 0
       end
     end
