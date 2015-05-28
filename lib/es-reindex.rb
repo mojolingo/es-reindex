@@ -33,8 +33,13 @@ class ESReindex
       remove: false, # remove the index in the new location first
       update: false, # update existing documents (default: only create non-existing)
       frame:  1000,  # specify frame size to be obtained with one fetch during scrolling
-      copy_mappings: true # Copy old mappings/settings
+      copy_mappings: true, # Copy old mappings/settings
+      #It is a good idea to append a user defined index live time and a user defined query
+      scroll: '10m',
+      query: { query: {match_all: {}}} #The default query is for all content
+
     }.merge! options
+
 
     %w{
       if unless mappings settings before_create after_create before_each after_each after_copy
@@ -59,8 +64,8 @@ class ESReindex
       end
     end
 
-    @sclient = Elasticsearch::Client.new host: surl
-    @dclient = Elasticsearch::Client.new host: durl
+    @sclient ||= Elasticsearch::Client.new host: surl
+    @dclient ||= Elasticsearch::Client.new host: durl
   end
 
   def okay_to_proceed?
@@ -146,11 +151,14 @@ class ESReindex
   def copy_docs
     log "Copying '#{surl}/#{sidx}' to '#{durl}/#{didx}'..."
     @start_time = Time.now
-
-    scroll = sclient.search index: sidx, search_type: "scan", scroll: '10m', size: frame
+    #Appends a query and scroll time to source client search.
+    query_body= {body: query}
+    #p qeuery
+    scroll = sclient.search index: sidx, search_type: "scan", scroll: @options[:scroll], size: frame, body: query 
     scroll_id = scroll['_scroll_id']
     total = scroll['hits']['total']
     log "Copy progress: %u/%u (%.1f%%) done.\r" % [done, total, 0]
+
 
     action = update? ? 'index' : 'create'
 
@@ -219,6 +227,14 @@ private
 
   def frame
     @options[:frame]
+  end
+
+
+  def scroll
+    @options[:scroll]
+  end
+  def query
+    @options[:query]
   end
 
   def from_cli?
