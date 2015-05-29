@@ -159,10 +159,9 @@ class ESReindex
     total = scroll['hits']['total']
     log "Copy progress: %u/%u (%.1f%%) done.\r" % [done, total, 0]
 
-
     action = update? ? 'index' : 'create'
 
-    while scroll = sclient.scroll(scroll_id: scroll['_scroll_id'], scroll: '10m') and not scroll['hits']['hits'].empty? do
+    while scroll = sclient.scroll(scroll_id: scroll_id, scroll: @options[:scroll]) and not scroll['hits']['hits'].empty? do
       bulk = []
       scroll['hits']['hits'].each do |doc|
         options[:before_each] && options[:before_each].call
