@@ -9,6 +9,17 @@ class ESReindex
 
   attr_accessor :src, :dst, :options, :surl, :durl, :sidx, :didx, :sclient, :dclient, :start_time, :done, :settings, :mappings
 
+
+  def sclient
+  	 @sclient ||= Elasticsearch::Client.new host: surl
+  end
+
+
+  def dclient
+  	  @dclient ||= Elasticsearch::Client.new host: durl
+  end
+
+
   def self.copy!(src, dst, options = {})
     self.new(src, dst, options).tap do |reindexer|
       reindexer.setup_index_urls
@@ -34,8 +45,7 @@ class ESReindex
       update: false, # update existing documents (default: only create non-existing)
       frame:  1000,  # specify frame size to be obtained with one fetch during scrolling
       copy_mappings: true, # Copy old mappings/settings
-      #It is a good idea to append a user defined index live time and a user defined query
-      scroll: '10m',
+      scroll: '10m', #defined index live time and a user defined query
       query: { query: {match_all: {}}} #The default query is for all content
 
     }.merge! options
@@ -64,8 +74,7 @@ class ESReindex
       end
     end
 
-    @sclient ||= Elasticsearch::Client.new host: surl
-    @dclient ||= Elasticsearch::Client.new host: durl
+    
   end
 
   def okay_to_proceed?
@@ -152,9 +161,8 @@ class ESReindex
     log "Copying '#{surl}/#{sidx}' to '#{durl}/#{didx}'..."
     @start_time = Time.now
     #Appends a query and scroll time to source client search.
-    query_body= {body: query}
-    #p qeuery
-    scroll = sclient.search index: sidx, search_type: "scan", scroll: @options[:scroll], size: frame, body: query 
+
+    scroll = sclient.search index: sidx, search_type: "scan", scroll: @options[:scroll], size: frame, body: @options[:query] 
     scroll_id = scroll['_scroll_id']
     total = scroll['hits']['total']
     log "Copy progress: %u/%u (%.1f%%) done.\r" % [done, total, 0]
@@ -226,14 +234,6 @@ private
 
   def frame
     @options[:frame]
-  end
-
-
-  def scroll
-    @options[:scroll]
-  end
-  def query
-    @options[:query]
   end
 
   def from_cli?
