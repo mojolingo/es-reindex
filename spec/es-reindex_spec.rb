@@ -8,7 +8,7 @@ describe ESReindex do
   let(:reindexer) { ESReindex.new src, dst, options }
 
   it "can be freshly initialized with options" do
-    expect(reindexer.options).to eq remove: false, update: true, frame: 1000, from_cli: false, copy_mappings: true
+    expect(reindexer.options).to eq remove: false, update: true, frame: 1000, from_cli: false, copy_mappings: true, :scroll=>"10m", :query=>{:query=>{:match_all=>{}}}
   end
 
   context "with invalid callback options" do
