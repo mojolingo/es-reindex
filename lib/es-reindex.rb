@@ -11,7 +11,7 @@ class ESReindex
 
 
   def sclient
-  	 @sclient ||= Elasticsearch::Client.new host: surl
+    @sclient ||= Elasticsearch::Client.new host: surl
   end
 
 
