@@ -108,8 +108,8 @@ class ESReindex
         return false unless get_mappings
         create_msg = " with settings & mappings from '#{surl}/#{sidx}'"
       else
-        @mappings = options[:mappings].call
-        @settings = options[:settings].call
+        @mappings = options[:mappings].nil? ? {} : options[:mappings].call
+        @settings = options[:settings].nil? ? {} : options[:settings].call
         create_msg = ""
       end
 

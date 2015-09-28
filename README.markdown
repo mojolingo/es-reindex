@@ -25,11 +25,12 @@ and mapping copied.
 
 Usage:
 
-  ./es-reindex.rb [-r] [-f <frame>] [source_url/]<index> [destination_url/]<index>
+  ./es-reindex [options] [source_url/]<index> [destination_url/]<index>
 
-    - -r - remove the index in the new location first
-    - -f - specify frame size to be obtained with one fetch during scrolling
-    - -u - update existing documents (default: only create non-existing)
+    - -r  - remove the index in the new location first
+    - -f  - specify frame size to be obtained with one fetch during scrolling
+    - -u  - update existing documents (default: only create non-existing)
+    - -nm - dont't copy mappings and settings
     - optional source/destination urls default to http://127.0.0.1:9200
 ```
 

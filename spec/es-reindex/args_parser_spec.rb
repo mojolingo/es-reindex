@@ -74,4 +74,20 @@ describe ESReindex::ArgsParser do
       expect(parsed_opts[:update]).to be true
     end
   end
+
+  context "without -nm" do
+    let(:args) { ["-u"] }
+
+    it "sets copy_mappings to true" do
+      expect(parsed_opts[:copy_mappings]).to be true
+    end
+  end
+
+  context "with -nm" do
+    let(:args) { ["-u", "-nm"] }
+
+    it "sets copy_mappings to false" do
+      expect(parsed_opts[:copy_mappings]).to be false
+    end
+  end
 end
