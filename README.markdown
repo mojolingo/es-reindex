@@ -17,7 +17,7 @@ Progress and time estimation is displayed during the scrolling process.
 
 Refer to script's help:
 
-```bash
+```
 $ ./es-reindex.rb -h
 
 Script to copy particular ES index including its (re)creation w/options set
@@ -30,7 +30,7 @@ Usage:
     - -r  - remove the index in the new location first
     - -f  - specify frame size to be obtained with one fetch during scrolling
     - -u  - update existing documents (default: only create non-existing)
-    - -nm - dont't copy mappings and settings
+    - -nm - don't copy mappings and settings
     - optional source/destination urls default to http://127.0.0.1:9200
 ```
 
