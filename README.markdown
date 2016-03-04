@@ -10,22 +10,26 @@ Progress and time estimation is displayed during the scrolling process.
 ## Requirements
 
 - Ruby 1.9.3 or newer
-- Gems:
-  - [elasticsearch](https://github.com/elasticsearch/elasticsearch-ruby)
+
+## Installation
+
+```
+[sudo] gem install es-reindex
+```
 
 ## Usage (command line)
 
 Refer to script's help:
 
 ```
-$ ./es-reindex.rb -h
+$ es-reindex -h
 
 Script to copy particular ES index including its (re)creation w/options set
 and mapping copied.
 
 Usage:
 
-  ./es-reindex [options] [source_url/]<index> [destination_url/]<index>
+  es-reindex [options] [source_url/]<index> [destination_url/]<index>
 
     - -r  - remove the index in the new location first
     - -f  - specify frame size to be obtained with one fetch during scrolling
