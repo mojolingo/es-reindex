@@ -157,13 +157,13 @@ class ESReindex
     while scroll = sclient.scroll(scroll_id: scroll['_scroll_id'], scroll: '10m') and not scroll['hits']['hits'].empty? do
       bulk = []
       scroll['hits']['hits'].each do |doc|
-        options[:before_each] && options[:before_each].call
+        options[:before_each] && options[:before_each].call(doc)
         ### === implement possible modifications to the document
         ### === end modifications to the document
         base = {'_index' => didx, '_id' => doc['_id'], '_type' => doc['_type'], data: doc['_source']}
         bulk << {action => base}
         @done = done + 1
-        options[:after_each] && options[:after_each].call
+        options[:after_each] && options[:after_each].call(doc)
       end
       unless bulk.empty?
         dclient.bulk body: bulk
