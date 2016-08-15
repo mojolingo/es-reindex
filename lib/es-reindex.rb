@@ -9,6 +9,17 @@ class ESReindex
 
   attr_accessor :src, :dst, :options, :surl, :durl, :sidx, :didx, :sclient, :dclient, :start_time, :done, :settings, :mappings
 
+
+  def sclient
+    @sclient ||= Elasticsearch::Client.new host: surl
+  end
+
+
+  def dclient
+    @dclient ||= Elasticsearch::Client.new host: durl
+  end
+
+
   def self.copy!(src, dst, options = {})
     self.new(src, dst, options).tap do |reindexer|
       reindexer.setup_index_urls
@@ -33,8 +44,12 @@ class ESReindex
       remove: false, # remove the index in the new location first
       update: false, # update existing documents (default: only create non-existing)
       frame:  1000,  # specify frame size to be obtained with one fetch during scrolling
-      copy_mappings: true # Copy old mappings/settings
+      copy_mappings: true, # Copy old mappings/settings
+      scroll: '10m', #defined index live time and a user defined query
+      query: { query: {match_all: {}}} #The default query is for all content
+
     }.merge! options
+
 
     %w{
       if unless mappings settings before_create after_create before_each after_each after_copy
@@ -59,8 +74,7 @@ class ESReindex
       end
     end
 
-    @sclient = Elasticsearch::Client.new host: surl
-    @dclient = Elasticsearch::Client.new host: durl
+    
   end
 
   def okay_to_proceed?
@@ -146,16 +160,18 @@ class ESReindex
   def copy_docs
     log "Copying '#{surl}/#{sidx}' to '#{durl}/#{didx}'..."
     @start_time = Time.now
+    #Appends a query and scroll time to source client search.
 
-    scroll = sclient.search index: sidx, search_type: "scan", scroll: '10m', size: frame
-    scroll_id = scroll['_scroll_id']
+    scroll = sclient.search index: sidx, search_type: "scan", scroll: @options[:scroll], size: frame, body: @options[:query] 
+    scroll_id = scroll['_scroll_id'] #initializes scroll id
     total = scroll['hits']['total']
     log "Copy progress: %u/%u (%.1f%%) done.\r" % [done, total, 0]
 
     action = update? ? 'index' : 'create'
 
-    while scroll = sclient.scroll(scroll_id: scroll['_scroll_id'], scroll: '10m') and not scroll['hits']['hits'].empty? do
+    while scroll = sclient.scroll(scroll_id: scroll_id, scroll: @options[:scroll]) and not scroll['hits']['hits'].empty? do
       bulk = []
+      scroll_id = scroll['_scroll_id'] #Updates scroll id
       scroll['hits']['hits'].each do |doc|
         options[:before_each] && options[:before_each].call(doc)
         ### === implement possible modifications to the document
